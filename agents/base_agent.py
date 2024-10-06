@@ -6,6 +6,14 @@ class Agent:
     Base class for all agents.
     """
 
+    IMPLEMENTATION_PROMPT = """\
+    You are a software developer, implementing the code for the plan for the web page in the markdown file for image that the user sends.
+    You will only implement one milestone at a time.
+
+    You will generate vanilla HTML and CSS and corresponding index.html and style.css files. \
+    You will use the tools available to save the files and update the markdown file.
+    """
+
     tools = [
         {
             "type": "function",
@@ -15,6 +23,32 @@ class Agent:
                 "parameters": {
                     "type": "object",
                     "properties": {
+                        "filename": {
+                            "type": "string",
+                            "description": "The name of the file to update.",
+                        },
+                        "contents": {
+                            "type": "string",
+                            "description": "The markdown, HTML, or CSS contents to write to the file.",
+                        },
+                    },
+                    "required": ["filename", "contents"],
+                    "additionalProperties": False,
+                },
+            }
+        },
+                {
+            "type": "function",
+            "function": {
+                "name": "implement",
+                "description": "Implement the milestone which is HTML, CSS, or markdown with the given contents.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "milestone": {
+                            "type": "string",
+                            "description": "The name of the milestone to implement.",
+                        },
                         "filename": {
                             "type": "string",
                             "description": "The name of the file to update.",
@@ -105,7 +139,20 @@ class Agent:
                     async for part in stream:
                         if token := part.choices[0].delta.content or "":
                             await response_message.stream_token(token)
+            elif function_name == "implement":
+                print("DEBUG: implementing")
+                import json
 
+                arguments_dict = json.loads(arguments)
+                milestone = arguments_dict.get("milestone")
+                filename = arguments_dict.get("filename")
+                contents = arguments_dict.get("contents")
+                print("DEBUG: milestone:", milestone)
+                print("DEBUG: filename:", filename)
+                print("DEBUG: contents:", contents)
+
+                implementation_agent = Agent(name="Implementation Agent", client=self.client, prompt=self.IMPLEMENTATION_PROMPT)
+                response_message = await implementation_agent.execute(message_history)
         else:
             print("No tool call")
 

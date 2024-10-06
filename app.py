@@ -54,7 +54,10 @@ Milestones should be formatted like this:
  - [ ] 1. This is the first milestone
  - [ ] 2. This is the second milestone
  - [ ] 3. This is the third milestone
+
+ If the user asks to implement one of the milestones, use available tools to implement it.
 """
+
 
 # Create an instance of the Agent class
 planning_agent = Agent(name="Planning Agent", client=client, prompt=PLANNING_PROMPT)
